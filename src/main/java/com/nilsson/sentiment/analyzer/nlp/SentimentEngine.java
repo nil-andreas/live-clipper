@@ -16,10 +16,10 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class NLP implements TextAnalyzer {
+public class SentimentEngine implements TextAnalyzer {
 	private final StanfordCoreNLP pipeline;
 
-	public NLP(@NonNull StanfordCoreNLP pipeline) {
+	public SentimentEngine(@NonNull StanfordCoreNLP pipeline) {
 		this.pipeline = pipeline;
 	}
 
