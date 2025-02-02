@@ -1,10 +1,7 @@
 package com.nilsson.sentiment.analyzer.nlp;
 
-import static com.nilsson.sentiment.analyzer.nlp.AnalysisResultParser.*;
-
 import com.nilsson.sentiment.analyzer.AnalyzeResult;
 import com.nilsson.sentiment.analyzer.TextAnalyzer;
-
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -14,6 +11,8 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.nilsson.sentiment.analyzer.nlp.AnalysisResultParser.mapToAnalyzationResult;
 
 @Slf4j
 public class SentimentEngine implements TextAnalyzer {
