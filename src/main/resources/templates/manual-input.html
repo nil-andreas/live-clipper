@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <title>Manual input</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <h1>Manual input</h1>
+    <form method="post">
+        <label for="sentence">Sentence to try:</label><br>
+        <input type="text" id="sentence" name="sentence"><br>
+        <label for="sentiment-picker">Pick algorithm to use for the sentiment</label><br>
+        <select name="sentimentType" id="sentiment-picker">
+            <option value="stanford-sentiment">Stanford sentiment</option>
+        </select>
+        <button hx-post="/manual-input"
+                hx-target="#result">Submit
+        </button>
+    </form>
+    <div id="result"></div>
+</section>
+</body>
+</html>
