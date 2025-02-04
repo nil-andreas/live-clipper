@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+
+    <script type="text/javascript" th:src="@{/webjars/chartjs/dist/chart.umd.js}"></script>
+    <title>Streaming data</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <h1>Streaming data</h1>
+
+    <div style="width: 1600px;"><canvas id="sentiment"></canvas></div>
+
+    <script>
+        var ctx = document.getElementById('sentiment').getContext('2d');
+        ctx.moveTo(0,0);
+        ctx.scale(1, 100);
+
+
+        var es = new EventSource("/streaming-data/sse");
+        es.onmessage = function(event) {
+            // console.log(event.data);
+            const data = JSON.parse(event.data);
+            ctx.lineTo(data.time, data.value);
+            ctx.stroke();
+
+        };
+
+    </script>
+</section>
+</body>
+</html>
