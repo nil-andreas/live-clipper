@@ -11,6 +11,7 @@ import com.nilsson.sentiment.analyzer.AnalyzeResult;
 import com.nilsson.sentiment.analyzer.SentimentType;
 import com.nilsson.sentiment.analyzer.TextAnalyzer;
 import com.nilsson.sentiment.message.MessageProcessingStrategy;
+import com.nilsson.sentiment.score.PlotScoreStrategy;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -23,6 +24,8 @@ public class TextAnalyzerService {
 	private final TextAnalyzer textAnalyzer;
 	@NonNull
 	private final MessageProcessingStrategy messageProcessing;
+	@NonNull
+	private final PlotScoreStrategy plotScoreStrategy;
 
 	public String analyzeSentence(String sentence, SentimentType parse) {
 		AnalyzeResult result = textAnalyzer.analyze(sentence);
@@ -32,20 +35,9 @@ public class TextAnalyzerService {
 	public Flux<PlotInput> fromStream() {
 		var input = getClass().getResourceAsStream("/chat/twitch-chat-2371394480.csv");
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(input));
-		return Flux.fromStream(bufferedReader.lines())
+		return plotScoreStrategy.score(Flux.fromStream(bufferedReader.lines())
 				.filter(messageProcessing.filter())
-				.map(messageProcessing.toMessage())
-				.map(toSentiment());
-	}
-
-	private Function<Map.Entry<Integer, String>, PlotInput> toSentiment() {
-		return entry -> {
-			AnalyzeResult sentiment = textAnalyzer.analyze(entry.getValue());
-			return PlotInput.builder()
-					.time(entry.getKey())
-					.value(sentiment.value)
-					.build();
-		};
+				.map(messageProcessing.toMessage()));
 	}
 
 }
