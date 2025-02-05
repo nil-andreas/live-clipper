@@ -9,23 +9,55 @@
 <section layout:fragment="content">
     <h1>Streaming data</h1>
 
-    <div style="width: 1600px;"><canvas id="sentiment"></canvas></div>
+    <canvas id="sentiment" width="1200" height="600" style="border: 1px solid black;"></canvas>
 
     <script>
         var ctx = document.getElementById('sentiment').getContext('2d');
-        ctx.moveTo(0,0);
-        ctx.scale(1, 100);
-
-
+        ctx.moveTo(100, 100);
+        ctx.beginPath()
+        ctx.lineWidth=5;
         var es = new EventSource("/streaming-data/sse");
+        var currentTime = -1;
+        var currentValue = 0;
+        var localMax = -1;
+        var localMin = -1;
         es.onmessage = function(event) {
-            // console.log(event.data);
             const data = JSON.parse(event.data);
-            ctx.lineTo(data.time, data.value);
-            ctx.stroke();
 
+
+            if(data.time === currentTime) {
+                currentValue += data.value;
+                if(currentValue > localMax) {
+                    localMax = currentValue;
+                    drawText(ctx, currentTime, currentValue);
+                }
+                if(currentValue < localMin) {
+                    localMin = currentValue;
+                }
+            } else {
+                currentTime = data.time;
+                currentValue = data.value;
+            }
+            drawLine(ctx, currentTime, currentValue);
         };
 
+        function drawLine(ctx, time, value) {
+            ctx.scale(1, 1);
+            const x = time;
+            const y = scaledY(value);
+            ctx.lineTo(x, y);
+            console.log("x: " + x + " y: " + y);
+            ctx.stroke();
+            ctx.moveTo(x, y);
+        }
+        function scaledY(y) {
+            return -y * 50 + 300;
+        }
+        function drawText(ctx, currentTime, currentValue) {
+            ctx.font = "30px Arial";
+            ctx.fillText(`(${currentTime}, ${currentValue})`, currentTime, scaledY(currentValue));
+
+        }
     </script>
 </section>
 </body>
