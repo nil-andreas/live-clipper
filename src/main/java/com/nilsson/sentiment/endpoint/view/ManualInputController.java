@@ -1,5 +1,6 @@
-package com.nilsson.sentiment;
+package com.nilsson.sentiment.endpoint.view;
 
+import com.nilsson.sentiment.TextAnalyzerService;
 import com.nilsson.sentiment.analyzer.SentimentTypeParser;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
