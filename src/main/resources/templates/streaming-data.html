@@ -10,22 +10,25 @@
     <canvas id="sentiment" width="800" height="600" style="border: 1px solid black;"></canvas>
 
     <script>
-        var ctx = document.getElementById('sentiment').getContext('2d');
+        const ctx = document.getElementById('sentiment').getContext('2d');
         ctx.moveTo(0, 100);
         ctx.beginPath()
         ctx.lineWidth = 2;
-        var es = new EventSource("/streaming-data/sse");
-        var localMax = -1;
-        var localMin = 1;
-        var storedPoints = [];
-        var latestTime = -1;
+        const es = new EventSource("/streaming-data/sse");
+        let storedPoints = [];
+        let latestTime = -1;
 
         // store to array and use some sort of callback for drawing each update?
         es.onmessage = function (event) {
             const data = JSON.parse(event.data);
+            if (latestTime > data.time) {
+                // the stream has been restarted. Reset
+                storedPoints = [];
+                latestTime = -1;
+            }
+            storedPoints = padWithZeroes(data, storedPoints);
             storedPoints.push(data);
             latestTime = data.time;
-            // clear up the array?
             drawCanvas();
         };
 
@@ -51,28 +54,24 @@
                     numberOfElementsToRemove++;
                 }
             }
-            storedPoints.splice(0, numberOfElementsToRemove);
+            storedPoints = storedPoints.slice(numberOfElementsToRemove);
             ctx.stroke();
         }
 
-        function drawLine(ctx, time, value) {
-            const x = time;
-            const y = scaledY(value);
-            ctx.lineTo(x, y);
-            console.log("x: " + x + " y: " + y);
-            ctx.stroke();
-            ctx.moveTo(x, y);
+        function padWithZeroes(newPoint, storedPoints) {
+            const paddedPoints = storedPoints.slice();
+            const lastPoint = paddedPoints[paddedPoints.length - 1];
+            if (lastPoint?.time != null && newPoint?.time != null) {
+                const lastTime = lastPoint.time;
+                for (let i = lastTime; i !== newPoint.time; i++) {
+                    paddedPoints.push({time: i, value: 0});
+                }
+            }
+            return paddedPoints;
         }
-
 
         function scaledY(y) {
             return -y * 20 + 400;
-        }
-
-        function drawText(ctx, currentTime, currentValue) {
-            ctx.font = "30px Arial";
-            ctx.fillText(`(${currentTime}, ${currentValue})`, currentTime, scaledY(currentValue));
-
         }
     </script>
 </section>
