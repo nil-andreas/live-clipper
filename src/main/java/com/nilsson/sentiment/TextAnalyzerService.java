@@ -35,7 +35,7 @@ public class TextAnalyzerService {
 		return plotScoreStrategy.score(Flux.fromStream(bufferedReader.lines())
 				.filter(messageProcessing.filter())
 						.map(messageProcessing.toMessage()))
-				.delayElements(Duration.ofMillis(200));
+				.delayElements(Duration.ofMillis(50));
 	}
 
 }
