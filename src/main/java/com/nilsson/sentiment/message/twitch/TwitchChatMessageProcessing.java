@@ -1,15 +1,13 @@
 package com.nilsson.sentiment.message.twitch;
 
+import com.nilsson.sentiment.message.MessageProcessingStrategy;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import org.springframework.stereotype.Component;
-
-import com.nilsson.sentiment.message.MessageProcessingStrategy;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -23,7 +21,7 @@ public class TwitchChatMessageProcessing implements MessageProcessingStrategy {
 				String[] parts = chat.split(",");
 				String username = parts[1];
 				String message = parts[3];
-				return !ROBOT_USERS.contains(username) && !message.contains("They've subscribed for");
+				return !ROBOT_USERS.contains(username) && !message.contains("They've subscribed for") && !message.contains("gifted a Tier") && !message.matches("\"\\d\"");
 			} catch (Exception e) {
 				log.debug("Error parsing chat message: {}", chat, e);
 				return false;

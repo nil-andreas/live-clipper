@@ -1,17 +1,14 @@
 package com.nilsson.sentiment.score;
 
-import java.util.Map;
-
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-
 import com.nilsson.sentiment.PlotInput;
 import com.nilsson.sentiment.analyzer.AnalyzeResult;
 import com.nilsson.sentiment.analyzer.TextAnalyzer;
-
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+
+import java.util.Map;
 
 @Component
 @AllArgsConstructor

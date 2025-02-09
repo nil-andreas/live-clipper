@@ -1,48 +1,57 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
 <head>
-
-    <script type="text/javascript" th:src="@{/webjars/chartjs/dist/chart.umd.js}"></script>
     <title>Streaming data</title>
 </head>
 <body>
 <section layout:fragment="content">
     <h1>Streaming data</h1>
 
-    <canvas id="sentiment" width="1200" height="600" style="border: 1px solid black;"></canvas>
+    <canvas id="sentiment" width="200" height="600" style="border: 1px solid black;"></canvas>
 
     <script>
         var ctx = document.getElementById('sentiment').getContext('2d');
-        ctx.moveTo(100, 100);
+        ctx.moveTo(0, 100);
         ctx.beginPath()
-        ctx.lineWidth=5;
+        ctx.lineWidth = 2;
         var es = new EventSource("/streaming-data/sse");
-        var currentTime = -1;
-        var currentValue = 0;
         var localMax = -1;
-        var localMin = -1;
-        es.onmessage = function(event) {
+        var localMin = 1;
+        var storedPoints = [];
+        var latestTime = -1;
+
+        // store to array and use some sort of callback for drawing each update?
+        es.onmessage = function (event) {
             const data = JSON.parse(event.data);
-
-
-            if(data.time === currentTime) {
-                currentValue += data.value;
-                if(currentValue > localMax) {
-                    localMax = currentValue;
-                    drawText(ctx, currentTime, currentValue);
-                }
-                if(currentValue < localMin) {
-                    localMin = currentValue;
-                }
-            } else {
-                currentTime = data.time;
-                currentValue = data.value;
-            }
-            drawLine(ctx, currentTime, currentValue);
+            storedPoints.push(data);
+            latestTime = data.time;
+            // clear up the array?
+            drawCanvas();
         };
 
+        function drawCanvas() {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            const windowStart = Math.max(latestTime - ctx.canvas.width, 0);
+
+            ctx.beginPath();
+            let firstPoint = true;
+            for (const point of storedPoints) {
+                if (point.time > windowStart) {
+                    const x = point.time - windowStart;
+                    const y = scaledY(point.value);
+
+                    if (firstPoint) {
+                        ctx.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+            }
+            ctx.stroke();
+        }
+
         function drawLine(ctx, time, value) {
-            ctx.scale(1, 1);
             const x = time;
             const y = scaledY(value);
             ctx.lineTo(x, y);
@@ -50,9 +59,12 @@
             ctx.stroke();
             ctx.moveTo(x, y);
         }
+
+
         function scaledY(y) {
-            return -y * 50 + 300;
+            return -y * 20 + 400;
         }
+
         function drawText(ctx, currentTime, currentValue) {
             ctx.font = "30px Arial";
             ctx.fillText(`(${currentTime}, ${currentValue})`, currentTime, scaledY(currentValue));

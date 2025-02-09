@@ -1,21 +1,18 @@
 package com.nilsson.sentiment;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Map;
-import java.util.function.Function;
-
-import org.springframework.stereotype.Service;
-
 import com.nilsson.sentiment.analyzer.AnalyzeResult;
 import com.nilsson.sentiment.analyzer.SentimentType;
 import com.nilsson.sentiment.analyzer.TextAnalyzer;
 import com.nilsson.sentiment.message.MessageProcessingStrategy;
 import com.nilsson.sentiment.score.PlotScoreStrategy;
-
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.time.Duration;
 
 @AllArgsConstructor
 @Service
@@ -37,7 +34,8 @@ public class TextAnalyzerService {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(input));
 		return plotScoreStrategy.score(Flux.fromStream(bufferedReader.lines())
 				.filter(messageProcessing.filter())
-				.map(messageProcessing.toMessage()));
+						.map(messageProcessing.toMessage()))
+				.delayElements(Duration.ofMillis(200));
 	}
 
 }
