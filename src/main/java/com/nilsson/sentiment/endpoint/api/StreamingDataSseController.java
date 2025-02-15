@@ -15,6 +15,7 @@ public class StreamingDataSseController {
 
     @GetMapping(path = "/streaming-data/sse", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<PlotInput> serverSentEvents() {
-        return textAnalyzerService.fromStream();
+        return textAnalyzerService.offlineStream();
     }
+
 }
