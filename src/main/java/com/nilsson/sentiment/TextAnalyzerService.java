@@ -17,25 +17,30 @@ import java.time.Duration;
 @AllArgsConstructor
 @Service
 public class TextAnalyzerService {
-	@NonNull
-	private final TextAnalyzer textAnalyzer;
-	@NonNull
-	private final MessageProcessingStrategy messageProcessing;
-	@NonNull
-	private final PlotScoreStrategy plotScoreStrategy;
+    @NonNull
+    private final TextAnalyzer textAnalyzer;
+    @NonNull
+    private final MessageProcessingStrategy messageProcessing;
+    @NonNull
+    private final PlotScoreStrategy plotScoreStrategy;
 
-	public String analyzeSentence(String sentence, SentimentType parse) {
-		AnalyzeResult result = textAnalyzer.analyze(sentence);
-		return result.toString();
-	}
+    public String analyzeSentence(String sentence, SentimentType parse) {
+        AnalyzeResult result = textAnalyzer.analyze(sentence);
+        return result.toString();
+    }
 
-	public Flux<PlotInput> fromStream() {
-		var input = getClass().getResourceAsStream("/chat/twitch-chat-2371394480.csv");
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(input));
-		return plotScoreStrategy.score(Flux.fromStream(bufferedReader.lines())
-				.filter(messageProcessing.filter())
-						.map(messageProcessing.toMessage()))
-				.delayElements(Duration.ofMillis(50));
-	}
+    public Flux<PlotInput> offlineStream() {
+        var input = getClass().getResourceAsStream("/chat/twitch-chat-2371394480.csv");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(input));
+        return plotScoreStrategy.score(Flux.fromStream(bufferedReader.lines())
+                        .filter(messageProcessing.filter())
+                        .map(messageProcessing.toMessage()))
+                .delayElements(Duration.ofMillis(50));
+    }
 
+    public Flux<PlotInput> fromStream(Flux<String> chatStream) {
+        return plotScoreStrategy.score(chatStream
+                .filter(messageProcessing.filter())
+                .map(messageProcessing.toMessage()));
+    }
 }

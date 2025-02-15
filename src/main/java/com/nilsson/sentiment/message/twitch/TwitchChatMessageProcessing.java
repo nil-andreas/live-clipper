@@ -2,6 +2,7 @@ package com.nilsson.sentiment.message.twitch;
 
 import com.nilsson.sentiment.message.MessageProcessingStrategy;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -9,33 +10,56 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-@Slf4j
+
+/**
+ * Example chat line:
+ * 210:<USERNAME>!<USERNAME>@<USERNAME>.tmi.twitch.tv PRIVMSG #solorenektononly :fear with ult and ghost lol
+ * where: chatmessage = `fear with ult and ghost lol`
+ * username    <USERNAME>
+ * channel     solorenektononly
+ **/
 @Component
+@Slf4j
+@Primary
 public class TwitchChatMessageProcessing implements MessageProcessingStrategy {
-	private static final Set<String> ROBOT_USERS = Set.of("nightbot", "moobot", "streamelements");
+    private static final Set<String> ROBOT_USERS = Set.of("nightbot", "moobot", "streamelements");
 
-	@Override
-	public Predicate<String> filter() {
-		return chat -> {
-			try {
-				String[] parts = chat.split(",");
-				String username = parts[1];
-				String message = parts[3];
-				return !ROBOT_USERS.contains(username) && !message.contains("They've subscribed for") && !message.contains("gifted a Tier") && !message.matches("\"\\d\"");
-			} catch (Exception e) {
-				log.debug("Error parsing chat message: {}", chat, e);
-				return false;
-			}
-		};
-	}
+    @Override
+    public Predicate<String> filter() {
+        return chat -> {
+            try {
+                var username = extractUsername(chat);
+                var message = extractMessage(chat);
+                return !ROBOT_USERS.contains(username)
+                        && !message.contains("They've subscribed for")
+                        && !message.contains("gifted a Tier")
+                        && !message.matches("\"\\d\"");
+            } catch (Exception e) {
+                log.debug("Error parsing chat message: {}", chat, e);
+                return false;
+            }
+        };
+    }
 
-	@Override
-	public Function<String, Map.Entry<Integer, String>> toMessage() {
-		return chat -> {
-			String[] parts = chat.split(",");
-			Integer time = Integer.parseInt(parts[0]);
-			String message = parts[3];
-			return Map.entry(time, message);
-		};
-	}
+
+    @Override
+    public Function<String, Map.Entry<Integer, String>> toMessage() {
+        return chat -> Map.entry(extractTime(chat), extractMessage(chat));
+    }
+
+    private static Integer extractTime(String chat) {
+        int firstColonIndex = chat.indexOf(":");
+        return Integer.parseInt(chat.substring(0, firstColonIndex));
+    }
+
+    private static String extractMessage(String chat) {
+        var beginChatMessage = chat.substring(1).indexOf(':');
+        return chat.substring(beginChatMessage);
+    }
+
+    private static String extractUsername(String chat) {
+        var firstColonIndex = chat.indexOf(":");
+        var exclamationPointIndex = chat.indexOf("!", firstColonIndex);
+        return chat.substring(firstColonIndex, exclamationPointIndex);
+    }
 }

@@ -8,13 +8,25 @@
     <h1>Streaming data</h1>
 
     <canvas id="sentiment" width="800" height="600" style="border: 1px solid black;"></canvas>
+    <div>
+        <input type="text" placeholder="Enter your favorite streamer" id="channel"/>
+        <button id="select-channel">Select channel</button>
+    </div>
 
     <script>
+        document.getElementById('select-channel').addEventListener('click', function () {
+            plotStream(document.getElementById('channel').value);
+        });
+
+        function plotStream(channel) {
+            if (!channel || channel.length < 3 || channel.length > 30) {
+                return;
+            }
         const ctx = document.getElementById('sentiment').getContext('2d');
         ctx.moveTo(0, 100);
         ctx.beginPath()
         ctx.lineWidth = 2;
-        const es = new EventSource("/streaming-data/sse");
+            const es = new EventSource(`/streaming-data/twitch-chat?channel=${channel}`);
         let storedPoints = [];
         let latestTime = -1;
 
@@ -29,10 +41,11 @@
             storedPoints = padWithZeroes(data, storedPoints);
             storedPoints.push(data);
             latestTime = data.time;
-            drawCanvas();
+            storedPoints = drawCanvas(ctx, latestTime, storedPoints);
         };
+        }
 
-        function drawCanvas() {
+        function drawCanvas(ctx, latestTime, storedPoints) {
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             const windowStart = Math.max(latestTime - ctx.canvas.width, 0);
 
@@ -56,6 +69,7 @@
             }
             storedPoints = storedPoints.slice(numberOfElementsToRemove);
             ctx.stroke();
+            return storedPoints;
         }
 
         function padWithZeroes(newPoint, storedPoints) {
