@@ -8,7 +8,7 @@ spring:
             clientSecret: ${TWITCH_CLIENT_SECRET}
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
-            scope: chat:read
+            scope: chat:read, clips:edit
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           twitch:
@@ -18,3 +18,7 @@ spring:
             user-name-attribute: sub
   application:
     name: sentiment
+#logging:
+#  level:
+#    org.springframework.web: DEBUG
+#    com.nilsson: DEBUG
