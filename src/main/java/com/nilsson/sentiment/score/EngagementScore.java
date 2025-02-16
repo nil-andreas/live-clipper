@@ -1,23 +1,21 @@
 package com.nilsson.sentiment.score;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.nilsson.sentiment.PlotInput;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-
-import com.nilsson.sentiment.PlotInput;
-
 import reactor.core.publisher.Flux;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Primary
 @Component
 public class EngagementScore implements PlotScoreStrategy {
-	private final AtomicInteger counter = new AtomicInteger(0);
-	private final AtomicInteger currentKey = new AtomicInteger(-1);
 
 	@Override
 	public Flux<PlotInput> score(Flux<Map.Entry<Integer, String>> textStream) {
+		final AtomicInteger counter = new AtomicInteger(0);
+		final AtomicInteger currentKey = new AtomicInteger(-1);
 		return textStream.handle((entry, sink) -> {
 			if(currentKey.get() == -1) {
 				currentKey.set(entry.getKey());

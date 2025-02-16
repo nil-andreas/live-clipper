@@ -14,7 +14,11 @@
     </div>
 
     <script>
+        let currentEventSource = null;
         document.getElementById('select-channel').addEventListener('click', function () {
+            if (currentEventSource) {
+                currentEventSource.close();
+            }
             plotStream(document.getElementById('channel').value);
         });
 
@@ -22,27 +26,28 @@
             if (!channel || channel.length < 3 || channel.length > 30) {
                 return;
             }
-        const ctx = document.getElementById('sentiment').getContext('2d');
-        ctx.moveTo(0, 100);
-        ctx.beginPath()
-        ctx.lineWidth = 2;
-            const es = new EventSource(`/streaming-data/twitch-chat?channel=${channel}`);
-        let storedPoints = [];
-        let latestTime = -1;
+            const ctx = document.getElementById('sentiment').getContext('2d');
+            ctx.clearRect(0, 0, 800, 600);
+            ctx.moveTo(0, 100);
+            ctx.beginPath()
+            ctx.lineWidth = 2;
+            currentEventSource = new EventSource(`/streaming-data/twitch-chat?channel=${channel}`);
+            let storedPoints = [];
+            let latestTime = -1;
 
-        // store to array and use some sort of callback for drawing each update?
-        es.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            if (latestTime > data.time) {
-                // the stream has been restarted. Reset
-                storedPoints = [];
-                latestTime = -1;
-            }
-            storedPoints = padWithZeroes(data, storedPoints);
-            storedPoints.push(data);
-            latestTime = data.time;
-            storedPoints = drawCanvas(ctx, latestTime, storedPoints);
-        };
+            // store to array and use some sort of callback for drawing each update?
+            currentEventSource.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                if (latestTime > data.time) {
+                    // the stream has been restarted. Reset
+                    storedPoints = [];
+                    latestTime = -1;
+                }
+                storedPoints = padWithZeroes(data, storedPoints);
+                storedPoints.push(data);
+                latestTime = data.time;
+                storedPoints = drawCanvas(ctx, latestTime, storedPoints);
+            };
         }
 
         function drawCanvas(ctx, latestTime, storedPoints) {
