@@ -11,6 +11,10 @@
     <div>
         <input type="text" placeholder="Enter your favorite streamer" id="channel"/>
         <button id="select-channel">Select channel</button>
+        <button id="clip">Clip it</button>
+    </div>
+    <div id="clips">
+        <ul id="clip-results"></ul>
     </div>
 
     <script>
@@ -20,6 +24,27 @@
                 currentEventSource.close();
             }
             plotStream(document.getElementById('channel').value);
+        });
+        document.getElementById('clip').addEventListener('click', function () {
+            fetch('api/clip/' + document.getElementById('channel').value)
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error("Failed clipping " + response.text());
+                })
+                .then(data => {
+                    const a = document.createElement('a');
+                    a.href = data;
+                    a.appendChild(document.createTextNode(document.getElementById('channel').value + " clip (" + new Date() + ")"));
+                    a.target = '_blank';
+                    const row = document.createElement('li');
+                    row.appendChild(a);
+                    document.getElementById('clip-results').appendChild(row);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
         });
 
         function plotStream(channel) {
