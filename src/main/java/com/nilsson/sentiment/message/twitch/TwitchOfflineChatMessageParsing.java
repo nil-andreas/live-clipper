@@ -1,17 +1,17 @@
 package com.nilsson.sentiment.message.twitch;
 
-import com.nilsson.sentiment.message.MessageProcessingStrategy;
+import com.nilsson.sentiment.domain.Message;
+import com.nilsson.sentiment.message.MessageParsingStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Slf4j
 @Component
-public class TwitchOfflineChatMessageProcessing implements MessageProcessingStrategy {
+public class TwitchOfflineChatMessageParsing implements MessageParsingStrategy {
     private static final Set<String> ROBOT_USERS = Set.of("nightbot", "moobot", "streamelements");
 
     @Override
@@ -30,12 +30,15 @@ public class TwitchOfflineChatMessageProcessing implements MessageProcessingStra
     }
 
     @Override
-    public Function<String, Map.Entry<Integer, String>> toMessage() {
+    public Function<String, Message> toMessage() {
         return chat -> {
             String[] parts = chat.split(",");
             Integer time = Integer.parseInt(parts[0]);
             String message = parts[3];
-            return Map.entry(time, message);
+            return Message.builder()
+                    .timestamp(time)
+                    .text(message)
+                    .build();
         };
     }
 }
