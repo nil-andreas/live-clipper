@@ -1,11 +1,13 @@
 package com.nilsson.sentiment.message;
 
-import java.util.Map;
+import com.nilsson.sentiment.domain.Message;
+
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public interface MessageProcessingStrategy {
+public interface MessageParsingStrategy {
 
 	Predicate<String> filter();
-	Function<String, Map.Entry<Integer, String>> toMessage();
+
+	Function<String, Message> toMessage();
 }
