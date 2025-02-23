@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
@@ -22,13 +23,11 @@ public class TwitchIrc {
             String ircServer = "irc.chat.twitch.tv";
             int ircPort = 6697;
 
-            try {
-                log.debug("Connecting to Twitch chat server on port={} and server={}", ircPort, ircServer);
-                SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                SSLSocket socket = (SSLSocket) sslSocketFactory.createSocket(ircServer, ircPort);
-
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+            log.debug("Connecting to Twitch chat server on port={} and server={}", ircPort, ircServer);
+            SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+            try (SSLSocket socket = (SSLSocket) sslSocketFactory.createSocket(ircServer, ircPort)) {
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 
                 log.debug("Connecting to channel with user={}, channel={}, oathToken={}",
                         username,
