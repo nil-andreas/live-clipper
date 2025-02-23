@@ -9,4 +9,6 @@ import org.mapstruct.Mapping;
 public interface ClipMapper {
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     ClipEntity toEntity(Clip clip);
+
+    Clip toDomain(ClipEntity clipEntity);
 }
