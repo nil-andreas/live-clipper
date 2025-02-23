@@ -2,6 +2,7 @@ package com.nilsson.sentiment.highlight;
 
 import com.nilsson.sentiment.PlotInput;
 import com.nilsson.sentiment.domain.ChannelSubscriptionEvent;
+import com.nilsson.sentiment.domain.Clip;
 import com.nilsson.sentiment.message.MessageParser;
 import com.nilsson.sentiment.score.MessageScorer;
 import com.nilsson.sentiment.service.TwitchClipService;
@@ -14,13 +15,11 @@ import reactor.core.publisher.Mono;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
 public class HighlightCaptureTask implements Runnable, PropertyChangeListener {
-    private static final int CLIP_COOLDOWN = 20_000;
     @NonNull
     private final ChannelSubscriptionEvent subscription;
     @NonNull
@@ -29,6 +28,8 @@ public class HighlightCaptureTask implements Runnable, PropertyChangeListener {
     private final MessageScorer scorer;
     @NonNull
     private final TwitchClipService twitchClipService;
+    @NonNull
+    private final TwitchClipProperties twitchClipProperties;
     private long lastClipTimestamp = 0;
     private volatile boolean running = true;
 
@@ -46,7 +47,7 @@ public class HighlightCaptureTask implements Runnable, PropertyChangeListener {
         var messageStream = parser.parse(subscription.getStream());
         Flux<Integer> scores = scorer.score(messageStream)
                 .map(PlotInput::getValue)
-                .take(Duration.of(300, ChronoUnit.SECONDS))
+                .take(Duration.ofMillis(twitchClipProperties.getScoringCalibrationTimeInMillis()))
                 .takeUntilOther(Flux.interval(Duration.ofMillis(100))
                         .filter(i -> !running)
                         .next());
@@ -67,15 +68,20 @@ public class HighlightCaptureTask implements Runnable, PropertyChangeListener {
                 .doOnNext(i -> log.info("Highlight score={} for channel={}", i, subscription.getChannel()))
                 .flatMap(i -> clip())
                 .doOnError(t -> log.error("Error while attempting to clip", t))
-                .doOnNext(url -> log.info("Highlight url={} for channel={}", url, subscription.getChannel()))
+                .doOnNext(this::store)
                 .subscribe();
 
     }
 
-    private Mono<String> clip() {
+    private void store(Clip clip) {
+        log.info("Storing url={} for channel={}", clip.getUrl(), subscription.getChannel());
+        twitchClipService.storeClip(clip);
+    }
+
+    private Mono<Clip> clip() {
         long clipTimestamp = System.currentTimeMillis();
-        if (clipTimestamp - lastClipTimestamp < CLIP_COOLDOWN) {
-            log.info("Will not create another clip within the clipCooldown of {} seconds for channel {}", CLIP_COOLDOWN / 1000.0, subscription.getChannel());
+        if (clipTimestamp - lastClipTimestamp < twitchClipProperties.getCooldownTimeInMillis()) {
+            log.info("Will not create another clip within the clipCooldown of {} seconds for channel {}", twitchClipProperties.getCooldownTimeInMillis() / 1000.0, subscription.getChannel());
             return Mono.empty();
         }
         lastClipTimestamp = clipTimestamp;

@@ -1,5 +1,6 @@
 package com.nilsson.sentiment.endpoint.api;
 
+import com.nilsson.sentiment.domain.Clip;
 import com.nilsson.sentiment.service.TwitchClipService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,6 @@ public class TwitchClipController {
     @GetMapping("/clip/{userId}")
     public ResponseEntity<Mono<String>> createClip(@PathVariable String userId, OAuth2AuthenticationToken token) {
         log.debug("createClip for user {}", userId);
-        return ResponseEntity.ok(twitchClipService.createClip(userId, token));
+        return ResponseEntity.ok(twitchClipService.createClip(userId, token).map(Clip::getUrl));
     }
 }
