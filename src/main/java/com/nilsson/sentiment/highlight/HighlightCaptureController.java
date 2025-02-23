@@ -28,6 +28,8 @@ public class HighlightCaptureController implements PropertyChangeListener {
     private final MessageScorer scorer;
     @NonNull
     private final TwitchClipService twitchClipService;
+    @NonNull
+    private final TwitchClipProperties twitchClipProperties;
     private ExecutorService virtualThreadExecutor;
 
     @PostConstruct
@@ -51,7 +53,7 @@ public class HighlightCaptureController implements PropertyChangeListener {
     }
 
     private HighlightCaptureTask createHighlightCaptureTaskForStream(ChannelSubscriptionEvent event) {
-        return new HighlightCaptureTask(event, parser, scorer, twitchClipService);
+        return new HighlightCaptureTask(event, parser, scorer, twitchClipService, twitchClipProperties);
     }
 
 }

@@ -18,7 +18,15 @@ spring:
             user-name-attribute: sub
   application:
     name: sentiment
+  data:
+    redis:
+      host: localhost
+      port: 6379
 #logging:
 #  level:
 #    org.springframework.web: DEBUG
 #    com.nilsson: DEBUG
+twitch:
+  clip:
+    cooldown-time-in-millis: 30000
+    scoring-calibration-time-in-millis: 300000
