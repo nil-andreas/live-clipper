@@ -52,8 +52,7 @@ public class TwitchChannelManager {
         var client = clientService.loadAuthorizedClient(token.getAuthorizedClientRegistrationId(), token.getName());
         var userName = getUserName(token);
         var oathToken = client.getAccessToken().getTokenValue();
-        Flux<String> subscription = twitchIrc.streamFromChannel(channel, userName, oathToken);
-        return subscription;
+        return twitchIrc.streamFromChannel(channel, userName, oathToken);
     }
 
     private String getUserName(OAuth2AuthenticationToken token) {
