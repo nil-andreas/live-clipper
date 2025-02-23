@@ -1,5 +1,7 @@
 package com.nilsson.sentiment.irc;
 
+import com.nilsson.sentiment.domain.AuthorizedClientKey;
+import com.nilsson.sentiment.domain.ChannelSubscriptionEvent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -31,8 +33,17 @@ public class TwitchChannelManager {
             return streams.get(channel);
         }
         Flux<String> subscription = connectAndSubscribe(channel, token);
-        storeSubscription(channel, subscription);
+        ChannelSubscriptionEvent subscriptionEvent = createSubscriptionEvent(channel, token, subscription);
+        storeSubscription(subscriptionEvent);
         return subscription;
+    }
+
+    private static ChannelSubscriptionEvent createSubscriptionEvent(String channel, OAuth2AuthenticationToken token, Flux<String> subscription) {
+        return ChannelSubscriptionEvent.builder()
+                .channel(channel)
+                .stream(subscription)
+                .authorizedClientKey(new AuthorizedClientKey(token))
+                .build();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -43,9 +54,9 @@ public class TwitchChannelManager {
         propertyChangeSupport.addPropertyChangeListener(PROPERTY_PREFIX + channel, listener);
     }
 
-    private void storeSubscription(String channel, Flux<String> subscription) {
-        streams.put(channel, subscription);
-        propertyChangeSupport.firePropertyChange(PROPERTY_PREFIX + channel, null, subscription);
+    private void storeSubscription(ChannelSubscriptionEvent subscriptionEvent) {
+        streams.put(subscriptionEvent.getChannel(), subscriptionEvent.getStream());
+        propertyChangeSupport.firePropertyChange(PROPERTY_PREFIX + subscriptionEvent.getChannel(), null, subscriptionEvent);
     }
 
     private Flux<String> connectAndSubscribe(String channel, OAuth2AuthenticationToken token) {

@@ -1,22 +1,20 @@
 package com.nilsson.sentiment.highlight;
 
+import com.nilsson.sentiment.domain.ChannelSubscriptionEvent;
 import com.nilsson.sentiment.irc.TwitchChannelManager;
 import com.nilsson.sentiment.message.MessageParser;
 import com.nilsson.sentiment.score.MessageScorer;
+import com.nilsson.sentiment.service.TwitchClipService;
 import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static com.nilsson.sentiment.highlight.HighlightCaptureTaskConfig.CHANNEL;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +26,8 @@ public class HighlightCaptureController implements PropertyChangeListener {
     private final MessageParser parser;
     @NonNull
     private final MessageScorer scorer;
+    @NonNull
+    private final TwitchClipService twitchClipService;
     private ExecutorService virtualThreadExecutor;
 
     @PostConstruct
@@ -42,20 +42,16 @@ public class HighlightCaptureController implements PropertyChangeListener {
             // Only interested in twitch channels
             return;
         }
-        if (evt.getNewValue() != null && evt.getNewValue() instanceof Flux<?> flux) {
-            var highlightCaptureTask = createHighlightCaptureTaskForStream(evt, flux);
+        if (evt.getNewValue() != null && evt.getNewValue() instanceof ChannelSubscriptionEvent event) {
+            var highlightCaptureTask = createHighlightCaptureTaskForStream(event);
             twitchChannelManager.addPropertyChangeListener(evt.getPropertyName(), highlightCaptureTask);
             virtualThreadExecutor.submit(highlightCaptureTask);
         }
 
     }
 
-    private HighlightCaptureTask createHighlightCaptureTaskForStream(PropertyChangeEvent evt, Flux<?> flux) {
-        Flux<String> messageStream = flux.cast(String.class);
-        return new HighlightCaptureTask(messageStream, parser, scorer, Map.of(CHANNEL, extractChannel(evt)));
+    private HighlightCaptureTask createHighlightCaptureTaskForStream(ChannelSubscriptionEvent event) {
+        return new HighlightCaptureTask(event, parser, scorer, twitchClipService);
     }
 
-    private static String extractChannel(PropertyChangeEvent evt) {
-        return evt.getPropertyName().substring(TwitchChannelManager.PROPERTY_PREFIX.length());
-    }
 }
