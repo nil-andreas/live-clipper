@@ -16,6 +16,12 @@
     <div id="clips">
         <ul id="clip-results"></ul>
     </div>
+    <div id="stored-clips"
+         hx-get="api/clip"
+         hx-target="this"
+         hx-trigger="every 5s">
+        "Nothing yet!"
+    </div>
 
     <script>
         let currentEventSource = null;
@@ -26,7 +32,7 @@
             plotStream(document.getElementById('channel').value);
         });
         document.getElementById('clip').addEventListener('click', function () {
-            fetch('api/clip/' + document.getElementById('channel').value)
+            fetch('api/clip/create/' + document.getElementById('channel').value)
                 .then(response => {
                     if (response.ok) {
                         return response.text();

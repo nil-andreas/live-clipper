@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j
@@ -42,7 +44,11 @@ public class TwitchClipService {
     public void storeClip(Clip clip) {
         ClipEntity entity = clipMapper.toEntity(clip);
         clipRepository.save(entity);
+    }
 
+    public Stream<Clip> findAllClips() {
+        return StreamSupport.stream(clipRepository.findAll().spliterator(), false)
+                .map(clipMapper::toDomain);
     }
 
     private Mono<Clip> createClip(String userId, String userAccessToken) {
