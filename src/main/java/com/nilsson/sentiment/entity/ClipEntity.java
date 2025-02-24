@@ -4,18 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-@RedisHash(value = "ClipEntity", timeToLive = 24 * 60 * 60)
+@Document(collection = "clips")
 public class ClipEntity {
     @Id
     private String id;
     private String url;
+    @Indexed(expireAfter = "24h")
     private LocalDateTime timestamp;
     private String channel;
 }
