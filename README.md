@@ -2,5 +2,5 @@
 
 ## How to run
 
-Requires a running redis database.
+Requires a running mongodb database.
 Run `docker-compose up` in the terminal to start the database
