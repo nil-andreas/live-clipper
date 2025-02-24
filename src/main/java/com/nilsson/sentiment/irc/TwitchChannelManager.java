@@ -54,6 +54,10 @@ public class TwitchChannelManager {
         propertyChangeSupport.addPropertyChangeListener(PROPERTY_PREFIX + channel, listener);
     }
 
+    public void removePropertyListener(String channel, PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(PROPERTY_PREFIX + channel, listener);
+    }
+
     private void storeSubscription(ChannelSubscriptionEvent subscriptionEvent) {
         streams.put(subscriptionEvent.getChannel(), subscriptionEvent.getStream());
         propertyChangeSupport.firePropertyChange(PROPERTY_PREFIX + subscriptionEvent.getChannel(), null, subscriptionEvent);
@@ -70,4 +74,5 @@ public class TwitchChannelManager {
         token.getPrincipal();
         return token.getPrincipal().getAttribute("preferred_username");
     }
+
 }

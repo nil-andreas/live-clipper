@@ -1,6 +1,16 @@
-version: '3'
+version: '3.8'
 services:
-  redis:
-    image: redis:latest
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
