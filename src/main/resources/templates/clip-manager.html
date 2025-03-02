@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <title>Clips Manager</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <h1>Manage your clips</h1>
+
+    <div id="stored-clips"
+         hx-get="/api/clip"
+         hx-target="this"
+         hx-trigger="load, every 5s">
+        "Nothing yet!"
+    </div>
+</section>
+
+</body>
+</html>
