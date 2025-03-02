@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
 <head>
-    <title>Streaming data</title>
+    <title>Live Score Graph</title>
 </head>
 <body>
 <section layout:fragment="content">
-    <h1>Streaming data</h1>
+    <h1>Live Score Graph</h1>
+    <p>Below is a graph showing the calculated score for the chat each second. A high peak means a high score.</p>
 
     <canvas id="sentiment" width="800" height="600" style="border: 1px solid black;"></canvas>
     <div>
@@ -15,12 +16,6 @@
     </div>
     <div id="clips">
         <ul id="clip-results"></ul>
-    </div>
-    <div id="stored-clips"
-         hx-get="api/clip"
-         hx-target="this"
-         hx-trigger="every 5s">
-        "Nothing yet!"
     </div>
 
     <script>
@@ -32,7 +27,7 @@
             plotStream(document.getElementById('channel').value);
         });
         document.getElementById('clip').addEventListener('click', function () {
-            fetch('api/clip/create/' + document.getElementById('channel').value)
+            fetch('/api/clip/create/' + document.getElementById('channel').value)
                 .then(response => {
                     if (response.ok) {
                         return response.text();
@@ -62,7 +57,7 @@
             ctx.moveTo(0, 100);
             ctx.beginPath()
             ctx.lineWidth = 2;
-            currentEventSource = new EventSource(`/streaming-data/twitch-chat?channel=${channel}`);
+            currentEventSource = new EventSource(`/api/streaming-data/twitch-chat?channel=${channel}`);
             let storedPoints = [];
             let latestTime = -1;
 

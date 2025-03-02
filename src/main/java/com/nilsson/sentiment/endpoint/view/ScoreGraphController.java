@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 @AllArgsConstructor
-public class StreamingDataController {
+public class ScoreGraphController {
 
-    @GetMapping("/streaming-data")
+    @GetMapping("/secured/score-graph")
     public String streamingData() {
-        return "streaming-data";
+        return "secured/score-graph";
     }
 
 }
