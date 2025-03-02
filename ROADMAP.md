@@ -6,10 +6,11 @@ This document outlines immediate next steps for the project
 
 ## Immediate Goals
 
-- **View clips without logging in**: Make authenticate to twitch a choice
 - **Admin page for clips**: Search/Watch/Remove recorded clips
 - **Admin page for subscriptions**: Add/List/Remove current subscribed channels
-
+- **Adaptive scoring**: The algorithm to determine if a clip is interesting should handle a general increase in score.
+  And not start to constantly clip when that happens
+- **Name project**: The project deserves a name (top candidate is LiveClipper, for now)
 ---
 
 ## Future Ideas
@@ -27,6 +28,7 @@ This document outlines immediate next steps for the project
 - **Option to clip interesting moments in a stream**
 - **Automatically detect interesting moments during a livestream**
 - **Automatically clip interesting moments of a stream and display in some way**
+- **View clips without logging in to twitch**
 
 ---
 
